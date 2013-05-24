@@ -1,0 +1,33 @@
+
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+
+  <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+  <script src="https://api.trello.com/1/client.js?key=b40154d674db60e94c62a035d0d94684"></script>
+  <script type="text/javascript">
+
+    function onAuthorize() {
+      Trello.get("boards", {}, function(){
+        console.log(arguments)
+      }, function(){
+        console.log(arguments)
+      })
+    }
+
+    if(Trello.authorized()){
+      onAuthorize()
+    } else {
+      Trello.authorize({
+        type       : "redirect",
+        success    : onAuthorize,
+        name       : "Trello Cards",
+        expiration : "1hour",            
+        persist    : true
+      })
+    }
+  </script>
+</body>
+</html>
