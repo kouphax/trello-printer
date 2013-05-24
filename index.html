@@ -8,26 +8,44 @@
   <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
   <script src="https://api.trello.com/1/client.js?key=b40154d674db60e94c62a035d0d94684"></script>
   <script type="text/javascript">
+    (function(){ 
 
-    function onAuthorize() {
-      Trello.get("boards", {}, function(){
-        console.log(arguments)
-      }, function(){
-        console.log(arguments)
-      })
-    }
+      var body = $('body');
 
-    if(Trello.authorized()){
-      onAuthorize()
-    } else {
-      Trello.authorize({
-        type       : "redirect",
-        success    : onAuthorize,
-        name       : "Trello Cards",
-        expiration : "1hour",            
-        persist    : true
-      })
-    }
+      function onAuthorize() {
+
+        // get user boards
+        Trello.get('members/me/boards', {filter: 'open'}, function(boards){
+          $.each(boards, function(index, board){
+            var item = $(
+              "<p>" + 
+                "<a href='#'>" + board.name + "</a>" + 
+              "</p>").find("a").on('click', function(){
+
+                Trello.get('boards/' + board.id + '/cards/open', function(cards){
+                  console.log(cards)
+                })
+                
+              }).end()
+
+            body.append(item)
+          })
+        });
+
+      }
+
+      if(Trello.authorized()){
+        onAuthorize()
+      } else {
+        Trello.authorize({
+          type       : "redirect",
+          success    : onAuthorize,
+          name       : "Trello Cards",
+          expiration : "1hour",            
+          persist    : true
+        })
+      }
+    })()
   </script>
 </body>
 </html>
