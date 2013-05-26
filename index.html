@@ -3,9 +3,55 @@
 <head>
   <title></title>
   <link rel="stylesheet" type="text/css" href="cards.css"/>
+  <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,700' rel='stylesheet' type='text/css'>
+  <style type="text/css">
+    body {
+      background-color: #37343A;
+    }
+
+    #header {
+      text-align: center;
+      font-family: 'Roboto Condensed', sans-serif;
+      color: #fff;
+      margin-top: 75px;
+    }
+
+    #header p {
+      margin-top:5px;
+      font-size:4em;
+      text-shadow: 1px 1px 1px #000000;
+      filter: dropshadow(color=#000000, offx=1, offy=1);
+    }
+
+    #canvas {
+      text-align:center;
+    }
+    #canvas button {
+      border:0;
+      background-color: #FCE5A5;
+      font-family: 'Roboto Condensed', sans-serif;
+      font-size:1.5em;
+      color: #37343A;
+      border-radius: 6px;
+      padding: 0.6em 1em;
+      box-shadow: 1px 1px 1px #000000;
+    }
+
+    #canvas button:hover {
+      background-color: #666;
+    }
+  </style>
 </head>
 <body>
-  <ul id="canvas"></ul>
+  <div id="header">
+    <img src="logo.png"/>
+    <p>Trello Printer</p>
+  </div>
+
+  <div id="canvas">
+    
+  </div>
+
   <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
   <script src="https://api.trello.com/1/client.js?key=b40154d674db60e94c62a035d0d94684"></script>
   <script src="http://documentcloud.github.com/underscore/underscore-min.js" type="text/javascript"></script>
@@ -15,55 +61,30 @@
       var body = $('#canvas');
 
       function showBoards() {
+        body.empty()
         Trello.get('members/me/boards', {filter: 'open'}, function(boards){
           $.each(boards, function(index, board){
-            var html = $("<li><a href='#' data-board='" + board.id + "'>" + board.name + "</a></li>")
+            var html = $("<li><a href='#' data-board-id='" + board.id + "' data-board-name='" + board.name + "'>" + board.name + "</a></li>")
 
             body.append(html)
           })
 
           body.find('a').on('click', function(){
-            var id = $(this).data('board')
-            showCards(id)
+            showCards($(this).data("board-id"), $(this).data("board-name"))
           });
-        });
+        }, handleErrors);
       }
 
-      function showCards(boardId) {
-        Trello.get('boards/' + boardId + '/cards/open', function(cards){
-          body.empty()
-
-          $.each(cards, function(index, card){
-            body.append("<li><input type='checkbox' />" + card.name + "</li>")
-          })
- 
-          var printButton = $("<button>Print</button>").on('click', function(){
-           print(cards);
-          })
- 
-          body.append(printButton)
+      function showCards(boardId, boardName) {
+        Trello.get('boards/' + boardId + '/cards/open', function(cards) {
+          print(cards, boardName)
         })
       }
 
-      function print(cards) {
-        var options = {
-          "filing-colours" : true,
-          "rubber-stamp"   : true,
-          "double-sided"   : true,
-          "white-backs"    : true
-        };
-
-        var cardColours = {
-          blue   : "rgba(0,0,255,0.3)",
-          green  : "rgba(0,255,0,0.3)",
-          orange : "rgba(255,165,0,0.3)",
-          purple : "rgba(128,0,128,0.3)",
-          red    : "rgba(255,0,0,0.6)",
-          yellow : "rgba(255,255,0,0.3)"
-        }
+      function print(cards, boardName) {
 
         var make_front = _.template(
-          '<div class="card" id="front-<%= cardno %>" style="background-color:<%=cardColour%>">' +
+          '<div class="card" id="front-<%= cardno %>">' +
           '  <div class="front side">' +
           '    <div class="header">' +
           '      <span class="labels">' +
@@ -74,7 +95,7 @@
           '      <div class="story-title"><%= name %></div>' +
           '    </div>' +
           '    <div class="footer">' +
-          '      <span class="points points<%= points %>"><span><%= points %></span></span>' +
+          '      <span class="points points<%= points %>"><span><%= points || "" %></span></span>' +
           '    </div>' +
           '  </div>' +
           '</div>');
@@ -84,7 +105,6 @@
           '  <div class="back side">' +
           '    <div class="header">' +
           '      <span class="project"><%= project_name %></span>' +
-          '      <span class="id"><%= id %></span>' +
           '    </div>' +
           '    <div class="middle">' +
           '      <div class="story-title"><%= name %></div>' +
@@ -97,8 +117,6 @@
           '      </table>' +
           '    </div>' +
           '    <div class="footer">' +
-          '      <% if (requester) { %><span class="requester"><%= requester %></span><% } %>' +
-          '      <% if (owner) { %><span class="owner"><%= owner %></span><% } %>' +
           '    </div>' +
           '  </div>' +
           '</div>');
@@ -108,39 +126,68 @@
 
           $('body > *').hide();
 
-          var main = $('<div id="pivotal-cards-pages"></div>');
-          
-          _.each(options, function(value, option) {
-            if (value) {
-              main.addClass(option);
-            }
-          });
+          var main = $('<div id="pivotal-cards-pages" class="filing-colours"></div>');
 
-          $('body').append(main);
+          $(document).keyup(function(e) {
+            if (e.keyCode == 27) { 
+              main.remove();
+              $('body > *').show();
+              $('body').css("background-color", "#37343A")
+            } 
+          });
+          
+          $('body').css("background-color", "#fff").append(main);
+
+          var cardCount = cards.length;
+          var cardBuildIndex = 0;
 
           _.each(cards, function(card) {
+
+              var labels = _.chain(card.labels)
+                            .map(function(label){ return label.name })
+                            .reject(function(label) { return !label; })
+                            .value()
+
               var item = {
                 cardno       : card.idShort,
                 id           : card.id,
                 name         : card.name,
-                cardColour   : "rgba(0,0,0,0)", // TODO: James Hughes
                 description  : card.desc,
-                project_name : "TODO: Board Name",
+                project_name : boardName,
                 tasks        : [],
-                points       : 0,
-                labels       : [],
-                requester    : "",   // TODO
-                owner        : ""    // TODO
+                points       : "",
+                labels       : labels
               };
 
-              fronts.push($(make_front(item)));
-              backs.push($(make_back(item)));
+              if(card.idChecklists[0]) {
+                Trello.checklists.get(card.idChecklists[0], function(checklist){
+                  _.each(checklist.checkItems, function(checkItems){
+                    item.tasks.push({
+                      description: checkItems.name,
+                      complete: checkItems.state == 'complete'
+                    })
+                  })
+
+                  fronts.push($(make_front(item)));
+                  backs.push($(make_back(item)));
+                  cardBuildIndex++
+                })
+              } else {
+                cardBuildIndex++
+                fronts.push($(make_front(item)));
+                backs.push($(make_back(item)));
+              }
           })
 
-          /*
-           *  layout cards
-           */
-          function double_sided() {
+          var interval = setInterval(function(){
+            if(cardCount == cardBuildIndex) {
+              clearTimeout(interval);
+              printCards();
+
+            }
+          }, 100);
+
+          function printCards(){
             var cardno;
             var front_page;
             var back_page;
@@ -157,26 +204,6 @@
               back_page.append(backs[cardno]);
             }
           }
-
-          function single_sided() {
-            var cardno;
-            var page;
-
-            for (cardno = 0; cardno < fronts.length; cardno++) {
-              if ((cardno % 2) === 0) {
-                page = $('<div class="page"></div>');
-                main.append(page);
-              }
-              page.append(fronts[cardno]);
-              page.append(backs[cardno]);
-            }
-          }
-
-          if (options['double-sided']) {
-            double_sided();
-          } else {
-            single_sided();
-          }
       }
 
       function onAuthorize() {
@@ -185,16 +212,38 @@
 
       }
 
-      if(Trello.authorized()){
-        onAuthorize()
-      } else {
+      function auth() {
         Trello.authorize({
           type       : "redirect",
           success    : onAuthorize,
           name       : "Trello Cards",
           expiration : "1hour",            
           persist    : true
+        })        
+      }
+
+
+
+      function handleErrors(xhr, message, error) {
+
+        if(xhr.status == 401) {
+          Trello.deauthorize()
+          auth()
+        }
+        console.log(arguments)
+      }
+
+      if(/[&#]?token=([0-9a-f]{64})/.test(location.hash)){
+        auth()
+      } else {
+        var authoriseButton = $('<button id="authorise">Authorise with Trello</button>').on('click', function(){
+          if(Trello.authorized()){
+            onAuthorize()
+          } else {
+            auth()
+          }
         })
+        body.append(authoriseButton)
       }
     })()
   </script>
