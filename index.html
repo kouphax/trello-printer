@@ -8,15 +8,18 @@
   <style type="text/css">
     body {
       background-color: #37343A;
+      font-family: 'Roboto Condensed', sans-serif;
+      color: #fff;
     }
 
     #header {
       text-align: center;
-      font-family: 'Roboto Condensed', sans-serif;
-      color: #fff;
       margin-top: 75px;
     }
 
+    .board {
+      font-size: 1.4em;
+    }
     #header p {
       margin-top:5px;
       font-size:4em;
@@ -36,6 +39,11 @@
       border-radius: 6px;
       padding: 0.6em 1em;
       box-shadow: 1px 1px 1px #000000;
+    }
+
+    #canvas .board button {
+      font-size: 0.7em;
+      padding: 0.3em 0.5em;
     }
 
     #canvas button:hover {
@@ -65,12 +73,12 @@
         body.empty()
         Trello.get('members/me/boards', {filter: 'open'}, function(boards){
           $.each(boards, function(index, board){
-            var html = $("<li><a href='#' data-board-id='" + board.id + "' data-board-name='" + board.name + "'>" + board.name + "</a></li>")
+            var html = $("<div><span class='board'>" + board.name + "<button data-board-id='" + board.id + "' data-board-name='" + board.name + "'>Print Cards</button></span></div>")
 
             body.append(html)
           })
 
-          body.find('a').on('click', function(){
+          body.find('.board button').on('click', function(){
             showCards($(this).data("board-id"), $(this).data("board-name"))
           });
         }, handleErrors);
