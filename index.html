@@ -215,7 +215,7 @@
                   fronts.push($(make_front(item)));
                   backs.push($(make_back(item)));
                   cardBuildIndex++
-                })
+                }, handleErrors)
               } else {
                 cardBuildIndex++
                 fronts.push($(make_front(item)));
