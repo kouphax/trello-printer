@@ -36,7 +36,8 @@
       line-height: 2em;
       margin-bottom: 25px;
       font-weight: 300;
-      font-size: 1.5em;
+      font-size: 1.3em;
+      text-shadow: 1px 1px 1px #000000;
     }
 
     #canvas {
@@ -84,7 +85,7 @@
   <div id="header">
     <img src="logo.png"/>
     <p>Trello Printer</p>
-    <div>Format and print cards from Trello</div>
+    <div>Print double-sided cards from Trello</div>
   </div>
 
   <div id="canvas">
@@ -103,68 +104,29 @@
       var body = $('#canvas');
 
       function showBoards() {
-        body.empty().append("<div id='project-list'></div>")
 
-        var list = body.find("#project-list")
+        var options = { filter: 'open' };
+        var renderBoards = function(boards){
+          var html = _.template($('#project-list-template').text())({ boards: boards })
+          body.empty()
+              .append(html)
+              .delegate('.project button', 'click', function(){
+                var id = $(this).data("board-id");
+                var name = $(this).data("board-name");
 
-        Trello.get('members/me/boards', {filter: 'open'}, function(boards){
-          $.each(boards, function(index, board){
-            var html = $("<div class='project'><button data-board-id='" + board.id + "' data-board-name='" + board.name + "'>Print Cards</button><div class='board'>" + board.name + "</div></div>")
+                Trello.get('boards/' + id + '/cards/open', function(cards) {
+                  print(cards, name)
+                })
+              })
+        }
 
-            list.append(html)
-          })
-
-          body.find('.project button').on('click', function(){
-            showCards($(this).data("board-id"), $(this).data("board-name"))
-          });
-        }, handleErrors);
-      }
-
-      function showCards(boardId, boardName) {
-        Trello.get('boards/' + boardId + '/cards/open', function(cards) {
-          print(cards, boardName)
-        })
+        Trello.get('members/me/boards',  options, renderBoards, handleErrors);
       }
 
       function print(cards, boardName) {
 
-        var make_front = _.template(
-          '<div class="card" id="front-<%= cardno %>">' +
-          '  <div class="front side">' +
-          '    <div class="header">' +
-          '      <span class="labels">' +
-          '<% _.each(labels, function(label) { %> <span class="label"><%= label %></span> <% }); %>' +
-          '      <span>' +
-          '    </div>' +
-          '    <div class="middle">' +
-          '      <div class="story-title"><%= name %></div>' +
-          '    </div>' +
-          '    <div class="footer">' +
-          '      <span class="points points<%= points %>"><span><%= points || "" %></span></span>' +
-          '    </div>' +
-          '  </div>' +
-          '</div>');
-
-        var make_back = _.template(
-          '<div class="card" id="back-<%= cardno %>">' +
-          '  <div class="back side">' +
-          '    <div class="header">' +
-          '      <span class="project"><%= project_name %></span>' +
-          '    </div>' +
-          '    <div class="middle">' +
-          '      <div class="story-title"><%= name %></div>' +
-          '      <div class="description"><%= description %></div>' +
-          '      <table class="tasks">' +
-          '<% _.each(tasks, function(task) { %><tr>' +
-          '      <td class="check <%= task.complete ? "complete" : "incomplete" %>"><%= task.complete ? "☑" : "☐" %></td>' +
-          '      <td class="task"><%= task.description %></td>' +
-          '</tr><% }); %>' +
-          '      </table>' +
-          '    </div>' +
-          '    <div class="footer">' +
-          '    </div>' +
-          '  </div>' +
-          '</div>');
+        var make_front = _.template($('#card-front-template').text());
+        var make_back = _.template($('#card-back-template').text());
 
           var fronts      = [];
           var backs       = [];
@@ -227,42 +189,33 @@
           var interval = setInterval(function(){
             if(cardCount == cardBuildIndex) {
               clearTimeout(interval);
-              printCards();
+
+              var cardno;
+              var front_page;
+              var back_page;
+
+              for (cardno = 0; cardno < fronts.length; cardno++) {
+                if ((cardno % 4) === 0) {
+                  front_page = $('<div class="page fronts"></div>');
+                  main.append(front_page);
+
+                  back_page = $('<div class="page backs"></div>');
+                  main.append(back_page);
+                }
+                front_page.append(fronts[cardno]);
+                back_page.append(backs[cardno]);
+              }
+
+              window.print();
 
             }
           }, 100);
-
-          function printCards(){
-            var cardno;
-            var front_page;
-            var back_page;
-
-            for (cardno = 0; cardno < fronts.length; cardno++) {
-              if ((cardno % 4) === 0) {
-                front_page = $('<div class="page fronts"></div>');
-                main.append(front_page);
-
-                back_page = $('<div class="page backs"></div>');
-                main.append(back_page);
-              }
-              front_page.append(fronts[cardno]);
-              back_page.append(backs[cardno]);
-            }
-
-            window.print();
-          }
-      }
-
-      function onAuthorize() {
-
-        showBoards();
-
       }
 
       function auth() {
         Trello.authorize({
           type       : "redirect",
-          success    : onAuthorize,
+          success    : showBoards,
           name       : "Trello Cards",
           expiration : "1hour",            
           persist    : true
@@ -285,7 +238,7 @@
       } else {
         var authoriseButton = $('<button id="authorise">Authorise with Trello</button>').on('click', function(){
           if(Trello.authorized()){
-            onAuthorize()
+            showBoards()
           } else {
             auth()
           }
@@ -303,6 +256,61 @@
     ga('create', 'UA-19143623-17', 'yobriefca.se');
     ga('send', 'pageview');
 
+  </script>
+
+  <script type="text/x-template" id="project-list-template">
+    <div id='project-list'>
+      <% _.each(boards, function(board) { %>
+        <div class='project'>
+          <button data-board-id='<%=board.id%>' data-board-name='<%=board.name%>'>Print Cards</button>
+          <div class='board'> <%=board.name%></div>
+        </div>
+      <% }); %>
+    </div>
+  </script>
+
+  <script type="text/x-template" id="card-front-template">
+    <div class="card" id="front-<%= cardno %>">
+      <div class="front side">
+        <div class="header">
+          <span class="labels">
+            <% _.each(labels, function(label) { %> 
+              <span class="label"><%= label %></span> 
+            <% }); %>
+          <span>
+        </div>
+        <div class="middle">
+          <div class="story-title"><%= name %></div>
+        </div>
+        <div class="footer">
+          <span class="points points<%= points %>"><span><%= points || "" %></span></span>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/x-template" id="card-back-template">
+    <div class="card" id="back-<%= cardno %>">
+      <div class="back side">
+        <div class="header">
+          <span class="project"><%= project_name %></span>
+        </div>
+        <div class="middle">
+          <div class="story-title"><%= name %></div>
+          <div class="description"><%= description %></div>
+          <table class="tasks">
+            <% _.each(tasks, function(task) { %>
+              <tr>
+                <td class="check <%= task.complete ? 'complete' : 'incomplete' %>"><%= task.complete ? "☑" : "☐" %></td>
+                <td class="task"><%= task.description %></td>
+              </tr>
+            <% }); %>
+          </table>
+        </div>
+        <div class="footer">
+        </div>
+      </div>
+    </div>
   </script>
 </body>
 </html>
