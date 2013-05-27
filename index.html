@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8"/>
-  <title></title>
+  <title>Trello Printer: Format and print cards from Trello</title>
   <link rel="stylesheet" type="text/css" href="cards.css"/>
   <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,700' rel='stylesheet' type='text/css'>
   <style type="text/css">
@@ -24,13 +24,23 @@
     }
     #header p {
       margin-top:5px;
+      margin-bottom:0;
+      padding-bottom:0;
       font-size:4em;
       text-shadow: 1px 1px 1px #000000;
-      filter: dropshadow(color=#000000, offx=1, offy=1);
+    }
+
+    #header div {
+      margin-top:0px;
+      line-height: 2em;
+      margin-bottom: 25px;
+      font-weight: 300;
+      font-size: 1.5em;
     }
 
     #canvas {
       text-align:center;
+       margin-bottom: 75px;
     }
     #canvas button {
       border:0;
@@ -51,11 +61,15 @@
 
     .project {
       clear: both;
-
     }
 
     #canvas button:hover {
       background-color: #666;
+    }
+
+    .board  {
+
+      font-weight: 300;
     }
 
     #project-list {
@@ -69,12 +83,16 @@
   <div id="header">
     <img src="logo.png"/>
     <p>Trello Printer</p>
+    <div>Format and print cards from Trello</div>
   </div>
 
   <div id="canvas">
     
   </div>
-
+  <div style="text-align:center">
+    <a href="https://twitter.com/share" class="twitter-share-button" data-via="kouphax" data-hashtags="trello">Tweet</a>
+  </div>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
   <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
   <script src="https://api.trello.com/1/client.js?key=b40154d674db60e94c62a035d0d94684"></script>
   <script src="http://documentcloud.github.com/underscore/underscore-min.js" type="text/javascript"></script>
@@ -229,6 +247,8 @@
               front_page.append(fronts[cardno]);
               back_page.append(backs[cardno]);
             }
+
+            window.print();
           }
       }
 
