@@ -18,7 +18,9 @@
     }
 
     .board {
-      font-size: 1.4em;
+      font-size: 1.4em;      
+      line-height: 1.6em;
+      font-weight: normal;
     }
     #header p {
       margin-top:5px;
@@ -41,13 +43,25 @@
       box-shadow: 1px 1px 1px #000000;
     }
 
-    #canvas .board button {
-      font-size: 0.7em;
+    #project-list button {
+      font-size: 0.9em;
       padding: 0.3em 0.5em;
+      float:right;
+    }
+
+    .project {
+      clear: both;
+
     }
 
     #canvas button:hover {
       background-color: #666;
+    }
+
+    #project-list {
+      width: 400px;
+      text-align: left;
+      margin:  0 auto;
     }
   </style>
 </head>
@@ -70,15 +84,18 @@
       var body = $('#canvas');
 
       function showBoards() {
-        body.empty()
+        body.empty().append("<div id='project-list'></div>")
+
+        var list = body.find("#project-list")
+
         Trello.get('members/me/boards', {filter: 'open'}, function(boards){
           $.each(boards, function(index, board){
-            var html = $("<div><span class='board'>" + board.name + "<button data-board-id='" + board.id + "' data-board-name='" + board.name + "'>Print Cards</button></span></div>")
+            var html = $("<div class='project'><span class='board'>" + board.name + "</span><button data-board-id='" + board.id + "' data-board-name='" + board.name + "'>Print Cards</button></div>")
 
-            body.append(html)
+            list.append(html)
           })
 
-          body.find('.board button').on('click', function(){
+          body.find('.project button').on('click', function(){
             showCards($(this).data("board-id"), $(this).data("board-name"))
           });
         }, handleErrors);
