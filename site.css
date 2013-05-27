@@ -1,0 +1,75 @@
+body {
+  background-color: #37343A;
+  font-family: 'Roboto Condensed', sans-serif;
+  color: #fff;
+}
+
+#header {
+  text-align: center;
+  margin-top: 75px;
+}
+
+.board {
+  font-size: 1.4em;      
+  line-height: 1.6em;
+  font-weight: normal;
+}
+#header p {
+  margin-top:5px;
+  margin-bottom:0;
+  padding-bottom:0;
+  font-size:4em;
+  text-shadow: 1px 1px 1px #000000;
+}
+
+#header div {
+  margin-top:0px;
+  line-height: 2em;
+  margin-bottom: 25px;
+  font-weight: 300;
+  font-size: 1.3em;
+  text-shadow: 1px 1px 1px #000000;
+}
+
+#stage {
+  text-align:center;
+   margin-bottom: 75px;
+}
+#stage button {
+  border:0;
+  background-color: #FCE5A5;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size:1.5em;
+  color: #37343A;
+  border-radius: 6px;
+  padding: 0.6em 1em;
+  box-shadow: 1px 1px 1px #000000;
+}
+
+#project-list button {
+  font-size: 0.9em;
+  padding: 0.3em 0.5em;
+  float:right;
+}
+
+.project {
+  clear: both;
+}
+
+#stage button:hover {
+  background-color: #666;
+}
+
+.board  {
+  font-weight: 300;
+}
+
+#project-list {
+  width: 400px;
+  text-align: left;
+  margin:  0 auto;
+}
+
+.site-footer {
+  text-align:center;
+}
