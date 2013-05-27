@@ -108,7 +108,7 @@
 
         Trello.get('members/me/boards', {filter: 'open'}, function(boards){
           $.each(boards, function(index, board){
-            var html = $("<div class='project'><span class='board'>" + board.name + "</span><button data-board-id='" + board.id + "' data-board-name='" + board.name + "'>Print Cards</button></div>")
+            var html = $("<div class='project'><button data-board-id='" + board.id + "' data-board-name='" + board.name + "'>Print Cards</button><div class='board'>" + board.name + "</div></div>")
 
             list.append(html)
           })
