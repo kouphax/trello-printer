@@ -1,4 +1,4 @@
-(function($, document, global, undefined){ 
+(function($, document, global, undefined){
 
   var body = $('body');
   var stage = $('#stage');
@@ -9,35 +9,61 @@
     var options = { filter: 'open' };
     var renderBoards = function(boards){
       var html = _.template($('#project-list-template').text())({ boards: boards })
-      stage.empty().append(html).delegate('.project button', 'click', function(){
+      stage.empty().append(html).delegate('.project button.print', 'click', function(){
         var id = $(this).data("board-id");
         var name = $(this).data("board-name");
 
         Trello.get('boards/' + id + '/cards/open', function(cards) {
           print(cards, name)
         })
+      });
+      stage.empty().append(html).delegate('.project button.boardlist', 'click', function (){
+        var id = $(this).data("board-id");
+        var name = $(this).data("board-name");
+
+        showBoardLists(id);
       })
     }
     Trello.get('members/me/boards',  options, renderBoards, handleErrors);
+  }
+
+  function showBoardLists(boardId) {
+    var renderBoardlists = function(boardlists){
+      var html = _.template($('#boardlist-list-template').text())({ boardlists: boardlists })
+      stage.empty().append(html).delegate('.boardlist-item button.print', 'click', function(){
+        var id = $(this).data("boardlist-id");
+        var name = $(this).data("boardlist-name");
+
+        Trello.get('lists/' + id + '/cards/open', function(cards) {
+          print(cards, name)
+        })
+      })
+    }
+
+    Trello.get('boards/' + boardId + '/lists', { filter: 'open' }, renderBoardlists, handleErrors)
   }
 
   function print(cards, boardName) {
 
     var fronts      = [];
     var backs       = [];
+    var options = {
+        'displayback': $('#options_displayback').is(':checked'),
+        'itemPerPage': 8
+    }
 
     $('body > *').hide();
 
     var main = $('<div id="pivotal-cards-pages" class="filing-colours"></div>');
 
     $(document).keyup(function(e) {
-      if (e.keyCode == 27) { 
+      if (e.keyCode == 27) {
         main.remove();
         $('body > *').show();
         body.css("background-color", "#37343A")
-      } 
+      }
     });
-    
+
     body.css("background-color", "#fff").append(main);
 
     var cardCount = cards.length;
@@ -48,7 +74,7 @@
       backs.push($(make_back(item)));
       cardBuildIndex++
     }
-    
+
     _.each(cards, function(card) {
 
         var labels = _.chain(card.labels)
@@ -92,15 +118,19 @@
         var back_page;
 
         for (cardno = 0; cardno < fronts.length; cardno++) {
-          if ((cardno % 4) === 0) {
+          if ((cardno % options.itemPerPage) === 0) {
             front_page = $('<div class="page fronts"></div>');
             main.append(front_page);
 
-            back_page = $('<div class="page backs"></div>');
-            main.append(back_page);
+            if (options.displayback) {
+                back_page = $('<div class="page backs"></div>');
+                main.append(back_page);
+            }
           }
           front_page.append(fronts[cardno]);
-          back_page.append(backs[cardno]);
+          if (options.displayback) {
+            back_page.append(backs[cardno]);
+          }
         }
 
         window.print();
@@ -114,9 +144,9 @@
       type       : "redirect",
       success    : showBoards,
       name       : "Trello Cards",
-      expiration : "1hour",            
+      expiration : "1hour",
       persist    : true
-    })        
+    })
   }
 
 

@@ -13,6 +13,10 @@
     <img src="logo.png"/>
     <p>Trello Printer</p>
     <div>Print double-sided cards from Trello</div>
+    <div>
+        <input type="checkbox" id="options_displayback" checked="checked" />
+        <label for="options_displayback">Display card backside</label>
+    </div>
   </div>
   <div id="stage"></div>
   <div class="site-footer">
@@ -26,8 +30,19 @@
     <div id='project-list'>
       <% _.each(boards, function(board) { %>
         <div class='project'>
-          <button data-board-id='<%=board.id%>' data-board-name='<%=board.name%>'>Print Cards</button>
+          <button class="print" data-board-id='<%=board.id%>' data-board-name='<%=board.name%>'>Print Cards</button>
+          <button class="boardlist" data-board-id='<%=board.id%>' data-board-name='<%=board.name%>'>View board list</button>
           <div class='board'> <%=board.name%></div>
+        </div>
+      <% }); %>
+    </div>
+  </script>
+  <script type="text/x-template" id="boardlist-list-template">
+    <div id='boardlist-list'>
+      <% _.each(boardlists, function(boardlist) { %>
+        <div class='boardlist-item'>
+          <button class="print" data-boardlist-id='<%=boardlist.id%>' data-boardlist-name='<%=boardlist.name%>'>Print Cards</button>
+          <div class='boardlist'> <%=boardlist.name%></div>
         </div>
       <% }); %>
     </div>
