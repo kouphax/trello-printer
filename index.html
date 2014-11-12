@@ -24,6 +24,7 @@
   <script src="underscore-min.js"></script>
   <script type="text/x-template" id="project-list-template">
     <div id='project-list'>
+      <label>Print Cover Images (where available) [EXPERIMENTAL]: <input type="checkbox" id="printCovers"/></label>
       <% _.each(boards, function(board) { %>
         <div class='project'>
           <button data-board-id='<%=board.id%>' data-board-name='<%=board.name%>'>Print Cards</button>
@@ -34,11 +35,11 @@
   </script>
   <script type="text/x-template" id="card-front-template">
     <div class="card" id="front-<%= cardno %>">
-      <div class="front side">
+      <div class="front side" <% if(hasCover) { %> style="background-image: url(<%= coverImageUrl %>);"  <% } %>>
         <div class="header">
           <span class="labels">
-            <% _.each(labels, function(label) { %> 
-              <span class="label"><%= label %></span> 
+            <% _.each(labels, function(label) { %>
+              <span class="label"><%= label %></span>
             <% }); %>
           <span>
         </div>
