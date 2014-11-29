@@ -35,7 +35,7 @@
   </script>
   <script type="text/x-template" id="card-front-template">
     <div class="card" id="front-<%= cardno %>">
-      <div class="front side" <% if(hasCover) { %> style="background-image: url(<%= coverImageUrl %>);"  <% } %>>
+      <div class="front side" <% if(hasCover) { %> style="background-image: url(<%= coverImageUrl %>); background-position:center; background-repeat: no-repeat;"  <% } %>>
         <div class="header">
           <span class="labels">
             <% _.each(labels, function(label) { %>
