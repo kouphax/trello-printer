@@ -46,13 +46,13 @@ body {
   box-shadow: 1px 1px 1px #000000;
 }
 
-#project-list button {
+#project-list button, #boardlist-list button {
   font-size: 0.9em;
   padding: 0.3em 0.5em;
   float:right;
 }
 
-.project {
+.project, .boardlist-item {
   clear: both;
 }
 
@@ -64,7 +64,7 @@ body {
   font-weight: 300;
 }
 
-#project-list {
+#project-list, #boardlist-list {
   width: 400px;
   text-align: left;
   margin:  0 auto;

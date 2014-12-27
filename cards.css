@@ -82,7 +82,6 @@
   color: rgba(255, 0, 0, 0.1);
   font-family: impact;
   font-weight: bolder;
-  text-transform: uppercase;
   overflow: hidden;
   position: absolute;
   z-index: 1;
@@ -97,7 +96,6 @@
   text-align: center;
   display: table-cell;
   vertical-align: middle;
-  text-transform: uppercase;
   z-index: 4;
   line-height: 1em;
 }
